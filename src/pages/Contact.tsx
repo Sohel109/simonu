@@ -217,7 +217,8 @@ const Contact: React.FC = () => {
                             <button 
                                 onClick={() => {
                                     setCategory(null);
-                                    setAttachments([]);
+                                    setCvFile(null);
+                                    setLmFile(null);
                                 }}
                                 style={{
                                     display: 'flex', alignItems: 'center', gap: '8px',

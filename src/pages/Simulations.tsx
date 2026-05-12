@@ -47,7 +47,6 @@ const simulationsData = [
 ];
 
 const Simulations: React.FC = () => {
-    const actusRef = useRef<HTMLDivElement>(null);
     const [events, setEvents] = useState<any[]>([]);
 
     useEffect(() => {
@@ -67,12 +66,6 @@ const Simulations: React.FC = () => {
             }
         };
     }, []);
-
-    const scrollToActus = () => {
-        if (actusRef.current) {
-            actusRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
 
     const defaultEvents = [
         ['04-05 Sept 2024', 'Simulation PGE', 'KEDGE Marseille', 'Étudiants PGE'],
