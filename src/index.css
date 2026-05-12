@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* --- PALETTE BICOLORE "PURE" --- */
+
+    /* Bleu Principal (Deep Navy) */
+    --royal-blue: #14213D;
+
+    /* Bleu Secondaire (Light Slate - pour les survols/accents subtils) */
+    --royal-light: #E5E5E5;
+
+    /* Blancs & Gris */
+    --white: #FFFFFF;
+    --off-white: #F8F9FA;
+    --grey-light: #E0E0E0;
+    --text-main: #14213D;
+    --text-secondary: #4A5568;
+
+    /* --- TYPOGRAPHIE --- */
+    /* Playfair pour l'élégance éditoriale, Montserrat pour la modernité géométrique */
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Montserrat', sans-serif;
+
+    /* --- UI TOKENS --- */
+    --radius-sm: 4px;
+    --radius-md: 12px;
+    --radius-pill: 100px;
+
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
+    --shadow-hover: 0 20px 40px rgba(20, 33, 61, 0.08);
+
+    /* --- LAYOUT --- */
+    --container-width: 1400px;
+}
+
+/* RESET & BASE */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--white);
+    color: var(--text-main);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* TYPOGRAPHY */
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-heading);
+    color: var(--royal-blue);
+    font-weight: 400;
+    /* Plus fin = plus élégant */
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: 4rem;
+    letter-spacing: -1px;
+}
+
+h2 {
+    font-size: 2.5rem;
+    letter-spacing: -0.5px;
+}
+
+h3 {
+    font-size: 1.75rem;
+}
+
+p {
+    font-weight: 300;
+    color: var(--text-secondary);
+}
+
+/* UTILITIES */
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+/* BOUTONS MINIMALISTES */
+.btn-primary {
+    display: inline-block;
+    padding: 16px 40px;
+    background: var(--royal-blue);
+    color: var(--white);
+    border-radius: var(--radius-pill);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    transition: all 0.4s ease;
+    border: 1px solid var(--royal-blue);
+}
+
+.btn-primary:hover {
+    background: transparent;
+    color: var(--royal-blue);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    display: inline-block;
+    padding: 16px 40px;
+    background: transparent;
+    color: var(--royal-blue);
+    border: 1px solid var(--royal-blue);
+    border-radius: var(--radius-pill);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    transition: all 0.4s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--royal-blue);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* CARDS */
+.clean-card {
+    background: var(--white);
+    padding: 40px;
+    border: 1px solid var(--grey-light);
+    border-radius: var(--radius-sm);
+    /* Rayon faible pour côté sérieux */
+    transition: all 0.4s ease;
+}
+
+.clean-card:hover {
+    border-color: var(--royal-blue);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-5px);
+}
+
+/* INPUTS */
+.clean-input {
+    width: 100%;
+    padding: 16px 0;
+    /* Underline style */
+    border: none;
+    border-bottom: 1px solid var(--grey-light);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    background: transparent;
+    border-radius: 0;
+}
+
+.clean-input:focus {
+    outline: none;
+    border-bottom: 1px solid var(--royal-blue);
+}
+
+/* SECTION TITLES */
+.section-title {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-title h2 {
+    margin-bottom: 16px;
+}
+
+.section-title .line {
+    width: 60px;
+    height: 1px;
+    background: var(--royal-blue);
+    margin: 0 auto;
+}

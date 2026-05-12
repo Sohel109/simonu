@@ -1,0 +1,57 @@
+{
+  "bureau": [
+    {
+      "name": "Romane PAUL",
+      "role": "Présidente",
+      "desc": "Vision stratégique, liaison administration, représentation externe."
+    },
+    {
+      "name": "Ema GOUBERT",
+      "role": "Vice-Présidente",
+      "desc": "Coordination opérations internes, suivi transversal, communication."
+    },
+    {
+      "name": "Erina DERVISHI",
+      "role": "Secrétaire Générale",
+      "desc": "Conformité statutaire, gestion administrative dossiers MUN."
+    },
+    {
+      "name": "Merrid MOHAMMEDI",
+      "role": "Trésorier",
+      "desc": "Santé financière, gestion budgets transatlantiques (NY)."
+    }
+  ],
+  "poles": [
+    {
+      "name": "Pôle MUN",
+      "chef": "Irlande GIOVANNINO",
+      "mission": "Préparation logistique et académique des délégations internationales (NY, DC)."
+    },
+    {
+      "name": "Pôle Simulation",
+      "chef": "Capucine LABENE",
+      "mission": "Ingénierie pédagogique, rédaction des Background Guides, formation des Chairs."
+    },
+    {
+      "name": "Pôle Communication",
+      "chef": "Camille JOURDIN",
+      "mission": "Gestion image de marque, réseaux sociaux, couverture événementielle."
+    },
+    {
+      "name": "Pôle Partenariats",
+      "chef": "Sabrine KAOUTAR",
+      "mission": "Viabilité financière, démarchage sponsors et relations institutionnelles."
+    },
+    {
+      "name": "Pôle Commercial",
+      "chef": "Félix LUCAS",
+      "mission": "Développement offre B2B (Corporate Services) pour l'autosuffisance."
+    },
+    {
+      "name": "Pôle Logistique",
+      "chef": "Louis KIEFFER",
+      "mission": "Coordination matérielle des événements et gestion des flux."
+    }
+  ],
+  "encadrement": "L'association bénéficie du soutien de l'administration (Céline Salle, Learning by Doing Manager) et d'un réseau Alumni actif (ex: Théo Geandreau, Camille Paolini) assurant le mentorat."
+}

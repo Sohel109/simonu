@@ -1,0 +1,14 @@
+{
+  "partenaires": [
+    {
+      "name": "KEDGE Business School",
+      "logo": "/images/kedge-logo.png",
+      "type": "Institutionnel"
+    },
+    {
+      "name": "Association Phoenix",
+      "logo": "/images/phoenix-logo.png",
+      "type": "Social"
+    }
+  ]
+}
