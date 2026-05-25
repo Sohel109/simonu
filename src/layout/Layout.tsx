@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Footer from '../components/Footer';
 import { useLocation } from 'react-router-dom';
 import EntranceAnimation from '../components/EntranceAnimation';
