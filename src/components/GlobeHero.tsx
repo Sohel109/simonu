@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Globe from 'react-globe.gl';
 import { useResizeDetector } from 'react-resize-detector';
 import * as THREE from 'three';
+import { useTranslation } from 'react-i18next';
 
 interface City {
     name: string;
@@ -28,10 +29,12 @@ const CAPITALS: City[] = [
 ];
 
 const GlobeHero: React.FC = () => {
+    const { i18n } = useTranslation();
     const { width, height, ref } = useResizeDetector();
     const globeEl = useRef<any>(null);
     const [countries, setCountries] = useState({ features: [] });
     const [arcs, setArcs] = useState<any[]>([]);
+    const [hoveredCountry, setHoveredCountry] = useState<any>(null);
 
     // 1. Fetch Country Polygons (GeoJSON)
     useEffect(() => {
@@ -98,10 +101,25 @@ const GlobeHero: React.FC = () => {
 
                     // Polygons (Countries)
                     polygonsData={countries.features}
-                    polygonCapColor={() => '#FFFFFF'} // White Countries
+                    polygonCapColor={(d: any) => d === hoveredCountry ? 'rgba(212, 175, 55, 0.15)' : '#FFFFFF'} // Soft semi-transparent gold highlight on hover
                     polygonSideColor={() => 'transparent'}
                     polygonStrokeColor={() => '#D4AF37'} // Gold Contours
-                    polygonAltitude={0.01} // Slight elevation to prevent z-fighting with globe surface
+                    polygonAltitude={(d: any) => d === hoveredCountry ? 0.02 : 0.01} // Slight lift on hover
+                    onPolygonHover={(polygon: any) => {
+                        if (ref.current) {
+                            ref.current.style.cursor = polygon ? 'pointer' : 'default';
+                        }
+                        setHoveredCountry(polygon);
+                    }}
+                    onPolygonClick={(polygon: any) => {
+                        if (!polygon || !polygon.properties) return;
+                        const name = polygon.properties.NAME || polygon.properties.NAME_LONG || polygon.properties.ADMIN;
+                        if (name) {
+                            const lang = i18n.language === 'en' ? 'en' : 'fr';
+                            const encoded = encodeURIComponent(name.trim().replace(/\s+/g, '_'));
+                            window.open(`https://${lang}.wikipedia.org/wiki/${encoded}`, '_blank');
+                        }
+                    }}
 
                     // Arcs
                     arcsData={arcs}
