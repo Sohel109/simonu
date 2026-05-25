@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/jpeg" href="/favicon.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- SEO Meta Tags -->
@@ -20,12 +20,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <!-- Hide Google Translate UI -->
+    <!-- Hard-block Google Translate toolbar (CSS + MutationObserver) -->
     <style>
-      .goog-te-banner-frame.skiptranslate { display: none !important; }
+      .goog-te-banner-frame, .goog-te-balloon-frame { display: none !important; }
+      #goog-gt-tt { display: none !important; }
+      .goog-text-highlight { background: none !important; box-shadow: none !important; }
       body { top: 0px !important; }
-      #google_translate_element { display: none !important; }
+      iframe.goog-te-banner-frame { display: none !important; }
     </style>
+    <script>
+      // Remove the Google Translate toolbar as soon as it is injected into the DOM
+      (function() {
+        function removeGTBar() {
+          var bar = document.querySelector('.goog-te-banner-frame');
+          if (bar) bar.parentNode.removeChild(bar);
+          document.body && (document.body.style.top = '0px');
+        }
+        // Run immediately and on every DOM mutation
+        var observer = new MutationObserver(removeGTBar);
+        document.addEventListener('DOMContentLoaded', function() {
+          removeGTBar();
+          observer.observe(document.body, { childList: true, subtree: true });
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

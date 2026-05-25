@@ -1,3 +1,4 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -183,4 +184,19 @@ p {
     height: 1px;
     background: var(--royal-blue);
     margin: 0 auto;
+}
+
+/* HIDE GOOGLE TRANSLATE ELEMENTS */
+body {
+    top: 0 !important;
+}
+.goog-te-banner-frame {
+    display: none !important;
+}
+#goog-gt-tt, .goog-te-balloon-frame {
+    display: none !important;
+}
+.goog-text-highlight {
+    background-color: transparent !important;
+    box-shadow: none !important;
 }

@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Briefcase, GraduationCap, ArrowLeft, Paperclip } from 'lucide-react';
+import { Mail, Briefcase, GraduationCap, ArrowLeft, Paperclip, ArrowRight } from 'lucide-react';
 
 type Category = 'general' | 'partenariat' | 'recrutement' | null;
 
 const Contact: React.FC = () => {
     const [category, setCategory] = useState<Category>(null);
     const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-    // Store raw File objects — no base64 needed
     const [cvFile, setCvFile] = useState<File | null>(null);
     const [lmFile, setLmFile] = useState<File | null>(null);
 
-    // General Form Data
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
         subject: '',
         message: '',
-        // Recruitment specifics
         programme: '',
         civilite: '',
     });
@@ -45,9 +42,7 @@ const Contact: React.FC = () => {
         }
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/send-email';
-
-            // Build FormData — files sent as real binary, not base64
+            const apiUrl = import.meta.env.VITE_API_URL || '/api/send-email';
             const formPayload = new FormData();
             formPayload.append('prenom', prenom);
             formPayload.append('nom', nom);
@@ -57,11 +52,7 @@ const Contact: React.FC = () => {
             if (cvFile) formPayload.append('cv', cvFile);
             if (lmFile) formPayload.append('lm', lmFile);
 
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                // NO Content-Type header — browser sets it automatically with boundary
-                body: formPayload
-            });
+            const response = await fetch(apiUrl, { method: 'POST', body: formPayload });
 
             if (response.ok) {
                 setStatus('success');
@@ -83,9 +74,30 @@ const Contact: React.FC = () => {
     };
 
     const cards = [
-        { id: 'general', title: 'Requête Générale', icon: <Mail size={48} strokeWidth={1} />, desc: 'Informations, questions générales ou requêtes diplomatiques et presse.' },
-        { id: 'partenariat', title: 'Devenir Partenaire', icon: <Briefcase size={48} strokeWidth={1} />, desc: 'Soutenez nos actions et associez votre image à l\'excellence SimONU.' },
-        { id: 'recrutement', title: 'Recrutement', icon: <GraduationCap size={48} strokeWidth={1} />, desc: 'Rejoignez nos délégations et formez-vous à la géopolitique internationale.' },
+        {
+            id: 'general',
+            title: 'Requête Générale',
+            ctaLabel: 'Nous contacter',
+            icon: <Mail size={42} strokeWidth={1.2} />,
+            desc: 'Informations, questions générales ou requêtes diplomatiques et presse.',
+            color: '#094067',
+        },
+        {
+            id: 'partenariat',
+            title: 'Devenir Partenaire',
+            ctaLabel: 'Devenir Partenaire',
+            icon: <Briefcase size={42} strokeWidth={1.2} />,
+            desc: "Soutenez nos actions et associez votre image à l'excellence SimONU.",
+            color: '#D4AF37',
+        },
+        {
+            id: 'recrutement',
+            title: 'Recrutement',
+            ctaLabel: 'Postuler',
+            icon: <GraduationCap size={42} strokeWidth={1.2} />,
+            desc: 'Rejoignez nos délégations et formez-vous à la géopolitique internationale.',
+            color: '#3F7E44',
+        },
     ];
 
     const inputStyle = {
@@ -98,7 +110,8 @@ const Contact: React.FC = () => {
         fontSize: '1rem',
         color: '#094067',
         outline: 'none',
-        transition: 'border-color 0.3s ease'
+        transition: 'border-color 0.3s ease',
+        boxSizing: 'border-box' as const,
     };
 
     const labelStyle = {
@@ -108,102 +121,72 @@ const Contact: React.FC = () => {
         textTransform: 'uppercase' as const,
         letterSpacing: '1px',
         color: '#094067',
-        fontWeight: 600
+        fontWeight: 600,
     };
 
     return (
         <div style={{ paddingTop: '140px', paddingBottom: '100px', minHeight: '100vh', background: 'white', overflow: 'hidden' }}>
             <div className="container" style={{ maxWidth: '1100px', margin: '0 auto' }}>
-                
-                <motion.div 
+
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    style={{ textAlign: 'center', marginBottom: '60px' }}
+                    style={{ textAlign: 'center', marginBottom: '72px' }}
                 >
-                    <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '3rem', color: '#094067', marginBottom: '16px' }}>
+                    <p style={{
+                        fontSize: '0.78rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '3px',
+                        color: '#D4AF37',
+                        marginBottom: '16px',
+                        fontWeight: 700,
+                        fontFamily: 'var(--font-body)',
+                    }}>
+                        Prise de contact
+                    </p>
+                    <h1 style={{
+                        fontFamily: 'Playfair Display, serif',
+                        fontSize: 'clamp(2rem, 4vw, 3rem)',
+                        color: '#094067',
+                        marginBottom: '20px',
+                        fontWeight: 700,
+                        letterSpacing: '-0.5px',
+                    }}>
                         Bureau des Relations
                     </h1>
-                    <p style={{ color: '#666', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
+                    <p style={{
+                        color: '#718096',
+                        fontSize: '1.05rem',
+                        maxWidth: '560px',
+                        margin: '0 auto',
+                        lineHeight: 1.7,
+                    }}>
                         Veuillez sélectionner la nature de votre requête pour être redirigé vers le département compétent.
                     </p>
                 </motion.div>
 
                 <AnimatePresence mode="wait">
                     {!category ? (
-                        <motion.div 
+                        <motion.div
                             key="cards"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20, filter: 'blur(5px)' }}
-                            transition={{ duration: 0.6 }}
-                            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}
+                            transition={{ duration: 0.5 }}
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                                gap: '24px',
+                            }}
                         >
-                            {cards.map(card => (
-                                <motion.div
+                            {cards.map((card, idx) => (
+                                <ContactCard
                                     key={card.id}
-                                    initial="rest"
-                                    whileHover="hover"
-                                    animate="rest"
-                                    onClick={() => setCategory(card.id as Category)}
-                                    style={{
-                                        padding: '60px 40px',
-                                        background: '#FAFCFF',
-                                        textAlign: 'center',
-                                        cursor: 'pointer',
-                                        position: 'relative',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}
-                                >
-                                    <motion.div 
-                                        variants={{
-                                            rest: { opacity: 0 },
-                                            hover: { opacity: 1 }
-                                        }}
-                                        style={{
-                                            position: 'absolute',
-                                            top: 0, left: 0, right: 0, bottom: 0,
-                                            background: 'white',
-                                            boxShadow: '0 20px 50px rgba(9, 64, 103, 0.08)',
-                                            zIndex: 0
-                                        }}
-                                    />
-                                    
-                                    <div style={{ position: 'relative', zIndex: 1 }}>
-                                        <motion.div 
-                                            variants={{
-                                                rest: { color: '#094067', scale: 1 },
-                                                hover: { color: '#D4AF37', scale: 1.05 }
-                                            }}
-                                            transition={{ duration: 0.4, ease: "easeOut" }}
-                                            style={{ marginBottom: '30px', display: 'flex', justifyContent: 'center' }}
-                                        >
-                                            {card.icon}
-                                        </motion.div>
-                                        
-                                        <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.5rem', color: '#094067', marginBottom: '16px', fontWeight: 600 }}>
-                                            {card.title}
-                                        </h3>
-                                        
-                                        <p style={{ color: '#777', fontSize: '0.9rem', lineHeight: 1.8, fontWeight: 300 }}>
-                                            {card.desc}
-                                        </p>
-                                        
-                                        <motion.div 
-                                            variants={{
-                                                rest: { opacity: 0, y: 10 },
-                                                hover: { opacity: 1, y: 0 }
-                                            }}
-                                            transition={{ duration: 0.3 }}
-                                            style={{ marginTop: '30px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '2px', color: '#094067', fontWeight: 600 }}
-                                        >
-                                            Ouvrir le dossier
-                                        </motion.div>
-                                    </div>
-                                </motion.div>
+                                    card={card}
+                                    index={idx}
+                                    onSelect={() => setCategory(card.id as Category)}
+                                />
                             ))}
                         </motion.div>
                     ) : (
@@ -214,34 +197,42 @@ const Contact: React.FC = () => {
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.5, ease: "easeOut" }}
                         >
-                            <button 
-                                onClick={() => {
-                                    setCategory(null);
-                                    setCvFile(null);
-                                    setLmFile(null);
-                                }}
+                            <button
+                                onClick={() => { setCategory(null); setCvFile(null); setLmFile(null); }}
                                 style={{
                                     display: 'flex', alignItems: 'center', gap: '8px',
-                                    background: 'none', border: 'none', color: '#666',
+                                    background: 'none', border: 'none', color: '#718096',
                                     cursor: 'pointer', fontSize: '0.85rem', marginBottom: '40px',
                                     textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600,
-                                    transition: 'color 0.2s'
+                                    transition: 'color 0.2s', fontFamily: 'var(--font-body)',
                                 }}
                                 onMouseEnter={(e) => e.currentTarget.style.color = '#094067'}
-                                onMouseLeave={(e) => e.currentTarget.style.color = '#666'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = '#718096'}
                             >
                                 <ArrowLeft size={16} /> Retour aux options
                             </button>
 
-                            <div style={{ background: 'white', border: '1px solid rgba(9, 64, 103, 0.1)', padding: '60px', boxShadow: '0 15px 50px rgba(0,0,0,0.03)' }}>
-                                <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '2.2rem', color: '#094067', marginBottom: '40px', borderBottom: '1px solid #eee', paddingBottom: '20px' }}>
+                            <div style={{
+                                background: 'white',
+                                border: '1px solid rgba(9, 64, 103, 0.1)',
+                                padding: '60px',
+                                boxShadow: '0 15px 50px rgba(0,0,0,0.04)',
+                            }}>
+                                <h2 style={{
+                                    fontFamily: 'Playfair Display, serif',
+                                    fontSize: '2.2rem',
+                                    color: '#094067',
+                                    marginBottom: '40px',
+                                    borderBottom: '1px solid #eee',
+                                    paddingBottom: '20px',
+                                    fontWeight: 700,
+                                }}>
                                     {category === 'general' && 'Requête Générale'}
                                     {category === 'partenariat' && 'Dossier de Partenariat'}
                                     {category === 'recrutement' && 'Candidature Officielle'}
                                 </h2>
 
                                 <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '30px' }}>
-                                    
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px' }}>
                                         <div>
                                             <label style={labelStyle}>Nom & Prénom</label>
@@ -254,7 +245,7 @@ const Contact: React.FC = () => {
                                     </div>
 
                                     {category === 'recrutement' && (
-                                        <motion.div 
+                                        <motion.div
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: 'auto' }}
                                             style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px', overflow: 'hidden' }}
@@ -294,7 +285,14 @@ const Contact: React.FC = () => {
                                         <motion.div
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
-                                            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px', padding: '30px', background: '#f9fbfd', border: '1px dashed rgba(9, 64, 103, 0.3)' }}
+                                            style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                                                gap: '30px',
+                                                padding: '30px',
+                                                background: '#f9fbfd',
+                                                border: '1px dashed rgba(9, 64, 103, 0.3)',
+                                            }}
                                         >
                                             <div>
                                                 <label style={labelStyle}>Curriculum Vitae (PDF) *</label>
@@ -330,7 +328,13 @@ const Contact: React.FC = () => {
                                         <label style={labelStyle}>
                                             {category === 'recrutement' ? 'Texte de présentation libre' : 'Corps du Message'}
                                         </label>
-                                        <textarea value={formData.message} onChange={(e) => updateField('message', e.target.value)} style={{ ...inputStyle, minHeight: '180px', resize: 'vertical' }} placeholder="Votre message ici..." required />
+                                        <textarea
+                                            value={formData.message}
+                                            onChange={(e) => updateField('message', e.target.value)}
+                                            style={{ ...inputStyle, minHeight: '180px', resize: 'vertical' }}
+                                            placeholder="Votre message ici..."
+                                            required
+                                        />
                                     </div>
 
                                     <button
@@ -349,10 +353,11 @@ const Contact: React.FC = () => {
                                             cursor: status === 'sending' ? 'not-allowed' : 'pointer',
                                             opacity: status === 'sending' ? 0.7 : 1,
                                             transition: 'all 0.3s ease',
-                                            boxShadow: '0 10px 20px rgba(9, 64, 103, 0.15)'
+                                            boxShadow: '0 10px 20px rgba(9, 64, 103, 0.15)',
+                                            fontFamily: 'var(--font-body)',
                                         }}
-                                        onMouseEnter={(e) => { if (status !== 'sending') e.currentTarget.style.transform = 'translateY(-2px)' }}
-                                        onMouseLeave={(e) => { if (status !== 'sending') e.currentTarget.style.transform = 'translateY(0)' }}
+                                        onMouseEnter={(e) => { if (status !== 'sending') e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                        onMouseLeave={(e) => { if (status !== 'sending') e.currentTarget.style.transform = 'translateY(0)'; }}
                                     >
                                         {status === 'sending' ? 'Transmission...' : 'Soumettre le dossier'}
                                     </button>
@@ -364,6 +369,103 @@ const Contact: React.FC = () => {
 
             </div>
         </div>
+    );
+};
+
+/** Composant card CTA avec bouton explicite */
+const ContactCard: React.FC<{
+    card: { id: string; title: string; ctaLabel: string; icon: React.ReactNode; desc: string; color: string };
+    index: number;
+    onSelect: () => void;
+}> = ({ card, index, onSelect }) => {
+    const [hovered, setHovered] = useState(false);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{
+                padding: '48px 36px 36px',
+                background: hovered ? '#FAFCFF' : 'white',
+                border: `1px solid ${hovered ? card.color + '30' : 'rgba(9,64,103,0.1)'}`,
+                borderTop: `4px solid ${hovered ? card.color : 'rgba(9,64,103,0.12)'}`,
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '20px',
+                boxShadow: hovered ? `0 20px 60px ${card.color}14` : '0 2px 12px rgba(0,0,0,0.04)',
+                transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
+                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                cursor: 'pointer',
+            }}
+            onClick={onSelect}
+        >
+            {/* Icon */}
+            <div style={{
+                color: hovered ? card.color : '#094067',
+                transition: 'color 0.3s ease, transform 0.3s ease',
+                transform: hovered ? 'scale(1.1)' : 'scale(1)',
+            }}>
+                {card.icon}
+            </div>
+
+            {/* Title */}
+            <h3 style={{
+                fontFamily: 'Playfair Display, serif',
+                fontSize: '1.5rem',
+                color: '#094067',
+                margin: 0,
+                fontWeight: 700,
+            }}>
+                {card.title}
+            </h3>
+
+            {/* Desc */}
+            <p style={{
+                color: '#718096',
+                fontSize: '0.93rem',
+                lineHeight: 1.75,
+                margin: 0,
+                fontWeight: 300,
+                fontFamily: 'var(--font-body)',
+            }}>
+                {card.desc}
+            </p>
+
+            {/* ── CTA BUTTON ── */}
+            <button
+                onClick={(e) => { e.stopPropagation(); onSelect(); }}
+                style={{
+                    marginTop: '8px',
+                    padding: '14px 32px',
+                    background: hovered ? card.color : '#094067',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '2px',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '1.5px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease',
+                    boxShadow: hovered
+                        ? `0 8px 24px ${card.color}44`
+                        : '0 4px 12px rgba(9,64,103,0.15)',
+                    transform: hovered ? 'scale(1.03)' : 'scale(1)',
+                    fontFamily: 'var(--font-body)',
+                }}
+            >
+                {card.ctaLabel}
+                <ArrowRight size={14} />
+            </button>
+        </motion.div>
     );
 };
 
