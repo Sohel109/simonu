@@ -22,25 +22,40 @@
 
     <!-- Hard-block Google Translate toolbar (CSS + MutationObserver) -->
     <style>
-      .goog-te-banner-frame, .goog-te-balloon-frame { display: none !important; }
-      #goog-gt-tt { display: none !important; }
+      /* Bloquer l'affichage de toutes les barres et popups connues de Google Translate */
+      .goog-te-banner-frame, .goog-te-balloon-frame, #goog-gt-tt, .skiptranslate > iframe, .VIpgJd-Zvi9od-aZ2wEe-wOHMyf, #google_translate_element { 
+        display: none !important; 
+        visibility: hidden !important;
+      }
       .goog-text-highlight { background: none !important; box-shadow: none !important; }
-      body { top: 0px !important; }
-      iframe.goog-te-banner-frame { display: none !important; }
+      
+      /* Empêcher Google Translate de décaler la page vers le bas */
+      html, body { 
+        top: 0px !important; 
+        margin-top: 0px !important; 
+        position: static !important; 
+      }
     </style>
     <script>
-      // Remove the Google Translate toolbar as soon as it is injected into the DOM
+      // Nettoyage agressif continu pour contrer les réinjections au changement de page (React Router)
       (function() {
         function removeGTBar() {
-          var bar = document.querySelector('.goog-te-banner-frame');
-          if (bar) bar.parentNode.removeChild(bar);
-          document.body && (document.body.style.top = '0px');
+          var frames = document.querySelectorAll('.goog-te-banner-frame, .skiptranslate > iframe');
+          frames.forEach(function(f) { f.remove(); });
+          if (document.body) {
+            document.body.style.top = '0px';
+            document.body.style.marginTop = '0px';
+          }
+          if (document.documentElement) {
+            document.documentElement.style.top = '0px';
+            document.documentElement.style.marginTop = '0px';
+          }
         }
-        // Run immediately and on every DOM mutation
         var observer = new MutationObserver(removeGTBar);
         document.addEventListener('DOMContentLoaded', function() {
           removeGTBar();
-          observer.observe(document.body, { childList: true, subtree: true });
+          observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+          observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
         });
       })();
     </script>
