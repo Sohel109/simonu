@@ -3,6 +3,7 @@ import Globe from 'react-globe.gl';
 import { useResizeDetector } from 'react-resize-detector';
 import * as THREE from 'three';
 import { useTranslation } from 'react-i18next';
+import { COUNTRY_TRANSLATIONS_FR } from '../data/countryTranslations';
 
 interface City {
     name: string;
@@ -116,7 +117,14 @@ const GlobeHero: React.FC = () => {
                         const name = polygon.properties.NAME || polygon.properties.NAME_LONG || polygon.properties.ADMIN;
                         if (name) {
                             const lang = i18n.language === 'en' ? 'en' : 'fr';
-                            const encoded = encodeURIComponent(name.trim().replace(/\s+/g, '_'));
+                            
+                            // Retrieve translated name for French if available
+                            let targetName = name;
+                            if (lang === 'fr' && COUNTRY_TRANSLATIONS_FR[name]) {
+                                targetName = COUNTRY_TRANSLATIONS_FR[name];
+                            }
+                            
+                            const encoded = encodeURIComponent(targetName.trim().replace(/\s+/g, '_'));
                             window.open(`https://${lang}.wikipedia.org/wiki/${encoded}`, '_blank');
                         }
                     }}
