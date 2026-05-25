@@ -38,10 +38,10 @@ const PartnerLogo: React.FC<{ partner: Partner }> = ({ partner }) => {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             className="flex items-center justify-center shrink-0 px-10"
-            style={{ height: '64px', textDecoration: 'none' }}
+            draggable={false}
+            style={{ height: '64px', textDecoration: 'none', userSelect: 'none' }}
         >
             {failed ? (
-                /* Fallback texte */
                 <span
                     style={{
                         fontFamily: 'var(--font-heading)',
@@ -60,6 +60,7 @@ const PartnerLogo: React.FC<{ partner: Partner }> = ({ partner }) => {
                 <img
                     src={partner.logo}
                     alt={partner.name}
+                    draggable={false}
                     onError={(e) => {
                         if (partner.domain && !e.currentTarget.src.includes('icon.horse')) {
                             e.currentTarget.src = `https://icon.horse/icon/${partner.domain}`;
@@ -68,17 +69,16 @@ const PartnerLogo: React.FC<{ partner: Partner }> = ({ partner }) => {
                         }
                     }}
                     style={{
-                        /* Taille fixe uniforme pour tous les logos */
                         height: '48px',
                         width: '120px',
                         objectFit: 'contain',
-                        /* Passage grayscale → couleur au hover */
                         filter: hovered
                             ? 'grayscale(0%) opacity(1)'
                             : 'grayscale(100%) opacity(0.5)',
                         transition: 'filter 0.3s ease, transform 0.3s ease',
                         transform: hovered ? 'scale(1.06)' : 'scale(1)',
                         display: 'block',
+                        userSelect: 'none',
                     }}
                 />
             )}
@@ -86,65 +86,126 @@ const PartnerLogo: React.FC<{ partner: Partner }> = ({ partner }) => {
     );
 };
 
-/**
- * Infinite Scrolling Marquee
- * - Boucle continue (seamless) via duplication de la liste
- * - Pause on hover
- * - Fade sur les bords gauche/droit
- */
 const PartnerMarquee: React.FC = () => {
     const [paused, setPaused] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [startScrollLeft, setStartScrollLeft] = useState(0);
     const trackRef = useRef<HTMLDivElement>(null);
 
-    /* Durée du tour complet (secondes). Plus c'est grand, plus c'est lent. */
-    const DURATION = 40;
+    // Auto-scroll loop
+    useEffect(() => {
+        let animationFrameId: number;
+        
+        const scroll = () => {
+            if (trackRef.current && !paused && !isDragging) {
+                trackRef.current.scrollLeft += 1;
+                
+                // The content is duplicated 4 times, resetting at 1/4th (one full set) width is seamless
+                const singleSetWidth = trackRef.current.scrollWidth / 4;
+                if (trackRef.current.scrollLeft >= singleSetWidth) {
+                    trackRef.current.scrollLeft -= singleSetWidth;
+                }
+            }
+            animationFrameId = requestAnimationFrame(scroll);
+        };
+        
+        animationFrameId = requestAnimationFrame(scroll);
+        return () => cancelAnimationFrame(animationFrameId);
+    }, [paused, isDragging]);
+
+    // Mouse Dragging (Desktop)
+    const handleMouseDown = (e: React.MouseEvent) => {
+        setIsDragging(true);
+        if (trackRef.current) {
+            setStartX(e.pageX - trackRef.current.offsetLeft);
+            setStartScrollLeft(trackRef.current.scrollLeft);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        setIsDragging(false);
+        setPaused(false);
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !trackRef.current) return;
+        e.preventDefault(); // prevent text selection
+        const x = e.pageX - trackRef.current.offsetLeft;
+        const walk = (x - startX) * 1.5; // Drag speed multiplier
+        
+        let newScrollLeft = startScrollLeft - walk;
+        const singleSetWidth = trackRef.current.scrollWidth / 4;
+
+        if (newScrollLeft >= singleSetWidth * 2) {
+            newScrollLeft -= singleSetWidth;
+            setStartX(e.pageX - trackRef.current.offsetLeft);
+            setStartScrollLeft(newScrollLeft);
+        } else if (newScrollLeft <= 0) {
+            newScrollLeft += singleSetWidth;
+            setStartX(e.pageX - trackRef.current.offsetLeft);
+            setStartScrollLeft(newScrollLeft);
+        }
+        
+        trackRef.current.scrollLeft = newScrollLeft;
+    };
+
+    // Native touch scrolling loop handler (Mobile)
+    const handleScroll = () => {
+        if (!trackRef.current || isDragging) return;
+        const singleSetWidth = trackRef.current.scrollWidth / 4;
+        
+        if (trackRef.current.scrollLeft >= singleSetWidth * 2) {
+            trackRef.current.scrollLeft -= singleSetWidth;
+        } else if (trackRef.current.scrollLeft <= 0) {
+            trackRef.current.scrollLeft += singleSetWidth;
+        }
+    };
 
     return (
         <section className="relative w-full overflow-hidden py-20">
-
-            {/* Fade gauche */}
             <div
                 className="pointer-events-none absolute top-0 left-0 z-10 h-full w-28"
-                style={{
-                    background: 'linear-gradient(to right, white 0%, transparent 100%)',
-                }}
+                style={{ background: 'linear-gradient(to right, white 0%, transparent 100%)' }}
             />
-            {/* Fade droit */}
             <div
                 className="pointer-events-none absolute top-0 right-0 z-10 h-full w-28"
-                style={{
-                    background: 'linear-gradient(to left, white 0%, transparent 100%)',
-                }}
+                style={{ background: 'linear-gradient(to left, white 0%, transparent 100%)' }}
             />
 
-            {/* TRACK — contient la liste × 2 pour la boucle seamless */}
             <div
                 ref={trackRef}
                 onMouseEnter={() => setPaused(true)}
-                onMouseLeave={() => setPaused(false)}
+                onMouseLeave={handleMouseLeave}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
+                onScroll={handleScroll}
                 className="flex"
                 style={{
-                    /* Animation CSS pure : translateX de 0 → -50% */
-                    animation: `marquee ${DURATION}s linear infinite`,
-                    animationPlayState: paused ? 'paused' : 'running',
-                    width: 'max-content',
+                    width: '100%',
+                    overflowX: 'auto',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    cursor: isDragging ? 'grabbing' : 'grab',
                 }}
             >
-                {/* Première copie */}
-                {PARTNERS.map((p, i) => (
-                    <PartnerLogo key={`a-${i}`} partner={p} />
-                ))}
-                {/* Deuxième copie — crée l'illusion d'infini */}
-                {PARTNERS.map((p, i) => (
-                    <PartnerLogo key={`b-${i}`} partner={p} />
-                ))}
+                <div className="flex w-max" style={{ pointerEvents: isDragging ? 'none' : 'auto' }}>
+                    {/* 4 sets to ensure smooth seamless looping in both directions during drag */}
+                    {PARTNERS.map((p, i) => <PartnerLogo key={`a-${i}`} partner={p} />)}
+                    {PARTNERS.map((p, i) => <PartnerLogo key={`b-${i}`} partner={p} />)}
+                    {PARTNERS.map((p, i) => <PartnerLogo key={`c-${i}`} partner={p} />)}
+                    {PARTNERS.map((p, i) => <PartnerLogo key={`d-${i}`} partner={p} />)}
+                </div>
             </div>
-
-            {/* KEYFRAME inline via style tag */}
+            
             <style>{`
-                @keyframes marquee {
-                    0%   { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
+                .flex::-webkit-scrollbar {
+                    display: none;
                 }
             `}</style>
         </section>
