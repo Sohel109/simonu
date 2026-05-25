@@ -167,7 +167,7 @@ const ElegantHeader: React.FC<{ isMenuOpen: boolean; setIsMenuOpen: (open: boole
                                 padding: scrolled ? '5px' : '0',
                             }}
                         >
-                            <span style={{ display: scrolled ? 'none' : 'block' }}>Menu</span>
+                            <span className="hidden sm:block" style={scrolled ? { display: 'none' } : {}}>Menu</span>
                             <Menu size={scrolled ? 20 : 24} style={{ transition: 'all 0.4s ease' }} />
                         </button>
                     </div>
