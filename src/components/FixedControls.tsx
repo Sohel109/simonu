@@ -1,11 +1,11 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 /** Contrôles fixes en bas à droite : Raccourci Géopo + Toggle Langue */
-const FixedControls: React.FC = () => {
+const FixedControls: React.FC<{ isMenuOpen?: boolean }> = ({ isMenuOpen = false }) => {
     const { i18n } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
@@ -71,48 +71,55 @@ const FixedControls: React.FC = () => {
             </motion.button>
 
             {/* TOGGLE LANGUE */}
-            <motion.button
-                onClick={toggleLanguage}
-                whileHover={{ scale: 1.06, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                title={isEn ? 'Passer en français' : 'Switch to English'}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0',
-                    background: 'white',
-                    border: '1px solid rgba(9,64,103,0.18)',
-                    borderRadius: '24px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                    cursor: 'pointer',
-                    padding: '0',
-                    overflow: 'hidden',
-                    fontFamily: 'var(--font-body)',
-                }}
-            >
-                <span style={{
-                    padding: '10px 14px',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.5px',
-                    color: !isEn ? 'white' : '#718096',
-                    background: !isEn ? '#094067' : 'transparent',
-                    transition: 'all 0.25s ease',
-                }}>
-                    <span translate="no">FR</span>
-                </span>
-                <span style={{
-                    padding: '10px 14px',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.5px',
-                    color: isEn ? 'white' : '#718096',
-                    background: isEn ? '#094067' : 'transparent',
-                    transition: 'all 0.25s ease',
-                }}>
-                    <span translate="no">EN</span>
-                </span>
-            </motion.button>
+            <AnimatePresence>
+                {!isMenuOpen && (
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.15 } }}
+                        onClick={toggleLanguage}
+                        whileHover={{ scale: 1.06, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        title={isEn ? 'Passer en français' : 'Switch to English'}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0',
+                            background: 'white',
+                            border: '1px solid rgba(9,64,103,0.18)',
+                            borderRadius: '24px',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                            cursor: 'pointer',
+                            padding: '0',
+                            overflow: 'hidden',
+                            fontFamily: 'var(--font-body)',
+                        }}
+                    >
+                        <span style={{
+                            padding: '10px 14px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.5px',
+                            color: !isEn ? 'white' : '#718096',
+                            background: !isEn ? '#094067' : 'transparent',
+                            transition: 'all 0.25s ease',
+                        }}>
+                            <span translate="no">FR</span>
+                        </span>
+                        <span style={{
+                            padding: '10px 14px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.5px',
+                            color: isEn ? 'white' : '#718096',
+                            background: isEn ? '#094067' : 'transparent',
+                            transition: 'all 0.25s ease',
+                        }}>
+                            <span translate="no">EN</span>
+                        </span>
+                    </motion.button>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

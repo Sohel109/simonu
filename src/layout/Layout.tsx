@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Footer from '../components/Footer';
 import { useLocation } from 'react-router-dom';
 import EntranceAnimation from '../components/EntranceAnimation';
@@ -13,6 +13,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
     const location = useLocation();
     const isHome = location.pathname === '/';
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'white' }}>
@@ -20,10 +21,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <EntranceAnimation />
 
             {/* Elegant Header (Fixed Top) */}
-            <ElegantHeader />
+            <ElegantHeader isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
             {/* Fixed Controls (Bottom Right — language toggle only) */}
-            <FixedControls />
+            <FixedControls isMenuOpen={isMenuOpen} />
 
             {/* Main content */}
             <main style={{
