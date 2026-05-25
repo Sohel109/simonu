@@ -82,7 +82,7 @@ const GlobeHero: React.FC = () => {
     }, [globeEl.current]);
 
     return (
-        <div ref={ref} style={{ width: '100%', height: '100vh', position: 'absolute', top: 0, left: 0, background: '#F8F9FA' }}>
+        <div ref={ref} style={{ width: '100%', height: '100vh', position: 'absolute', top: 0, left: 0, background: '#F8F9FA', pointerEvents: (width && width < 768) ? 'none' : 'auto' }}>
             {width && height && (
                 <Globe
                     ref={globeEl}
