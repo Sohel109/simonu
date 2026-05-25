@@ -81,70 +81,8 @@ const GlobeHero: React.FC = () => {
         }
     }, [globeEl.current]);
 
-    // 3. Touch Interception Logic for Mobile Scrolling vs Rotating
-    useEffect(() => {
-        const parent = ref.current;
-        if (!parent) return;
-
-        let startX = 0;
-        let startY = 0;
-        let isVertical = false;
-
-        const onTouchStart = (e: TouchEvent) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            isVertical = false;
-        };
-
-        const onTouchMove = (e: TouchEvent) => {
-            if (e.touches.length > 1) return;
-            const deltaX = Math.abs(e.touches[0].clientX - startX);
-            const deltaY = Math.abs(e.touches[0].clientY - startY);
-
-            if (!isVertical && deltaY > deltaX && deltaY > 5) {
-                isVertical = true;
-            }
-            if (isVertical) {
-                e.stopPropagation(); // Stop OrbitControls from receiving the event and calling preventDefault
-            }
-        };
-
-        const onPointerDown = (e: PointerEvent) => {
-            if (e.pointerType !== 'touch') return;
-            startX = e.clientX;
-            startY = e.clientY;
-            isVertical = false;
-        };
-
-        const onPointerMove = (e: PointerEvent) => {
-            if (e.pointerType !== 'touch') return;
-            const deltaX = Math.abs(e.clientX - startX);
-            const deltaY = Math.abs(e.clientY - startY);
-
-            if (!isVertical && deltaY > deltaX && deltaY > 5) {
-                isVertical = true;
-            }
-            if (isVertical) {
-                e.stopPropagation();
-            }
-        };
-
-        // Use capture phase to intercept before OrbitControls
-        parent.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
-        parent.addEventListener('touchmove', onTouchMove, { capture: true, passive: false });
-        parent.addEventListener('pointerdown', onPointerDown, { capture: true, passive: true });
-        parent.addEventListener('pointermove', onPointerMove, { capture: true, passive: false });
-
-        return () => {
-            parent.removeEventListener('touchstart', onTouchStart, { capture: true });
-            parent.removeEventListener('touchmove', onTouchMove, { capture: true });
-            parent.removeEventListener('pointerdown', onPointerDown, { capture: true });
-            parent.removeEventListener('pointermove', onPointerMove, { capture: true });
-        };
-    }, [ref.current]);
-
     return (
-        <div ref={ref} style={{ width: '100%', height: '100vh', position: 'absolute', top: 0, left: 0, background: '#F8F9FA' }}>
+        <div ref={ref} style={{ width: '100%', height: '100vh', position: 'absolute', top: 0, left: 0, background: '#F8F9FA', pointerEvents: (width && width < 768) ? 'none' : 'auto' }}>
             {width && height && (
                 <Globe
                     ref={globeEl}
