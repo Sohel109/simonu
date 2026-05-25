@@ -36,14 +36,7 @@ const TimezoneClock: React.FC = () => {
     }, [selectedCity]);
 
     return (
-        <div style={{
-            position: 'absolute', // Absolute relative to the Hero container, or Fixed if global?
-            // User said "haut à gauche fixe". If it's for the WHOLE site, fixed. If just Hero, absolute.
-            // "fixe" usually implies position: fixed.
-            top: '20px',
-            left: '20px',
-            zIndex: 100,
-        }}>
+        <div className="absolute z-[100] left-4 top-[90px] sm:left-5 sm:top-5">
             <div style={{ position: 'relative' }}>
                 {/* Clock Button */}
                 <motion.button
