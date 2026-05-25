@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import EntranceAnimation from '../components/EntranceAnimation';
 import ElegantHeader from '../components/ElegantHeader';
 import FixedControls from '../components/FixedControls';
+import AddToHomeScreenIOS from '../components/AddToHomeScreenIOS';
 import '../i18n'; // Ensure i18n is initialized
 
 interface LayoutProps {
@@ -25,6 +26,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Fixed Controls (Bottom Right — language toggle only) */}
             <FixedControls isMenuOpen={isMenuOpen} />
+
+            {/* iOS Add to Home Screen Prompt */}
+            <AddToHomeScreenIOS />
 
             {/* Main content */}
             <main style={{

@@ -71,7 +71,13 @@ i18n
                     "feat_2_title": "Excellence",
                     "feat_2_text": "Intensive preparation for International MUNs. Recognized awards (New York, Washington).",
                     "feat_3_title": "Impact",
-                    "feat_3_text": "Equal Opportunity Program for 150 high school students. Stimulating civic ambition."
+                    "feat_3_text": "Equal Opportunity Program for 150 high school students. Stimulating civic ambition.",
+                    "pwa_ios_title": "Install SimONU",
+                    "pwa_ios_subtitle": "Add SimONU to your home screen for the best experience.",
+                    "pwa_ios_step1": "Tap the Share button [share_icon] in the browser toolbar.",
+                    "pwa_ios_step2": "Scroll down and select '[plus_icon] Add to Home Screen'.",
+                    "pwa_ios_hint": "This app runs in full screen and does not require the App Store.",
+                    "pwa_ios_close": "Got it"
                 }
             },
             fr: {
@@ -88,7 +94,7 @@ i18n
                     "privacy": "Confidentialité",
                     "follow_us": "Suivez-nous",
                     "nav": "Navigation",
-
+ 
                     // SDGs
                     "sdg_title": "Objectifs de Développement Durable",
                     "sdg_1": "Pas de pauvreté",
@@ -108,14 +114,14 @@ i18n
                     "sdg_15": "Vie terrestre",
                     "sdg_16": "Paix, justice et institutions efficaces",
                     "sdg_17": "Partenariats pour la réalisation des objectifs",
-
+ 
                     // Stats & Partners
                     "stat_years": "Années d'Expérience",
                     "stat_prepa": "Participants Prépa",
                     "stat_awards": "Prix Internationaux",
                     "stat_students": "Étudiants Touchés",
                     "partners_inst": "Partenaires Institutionnels",
-
+ 
                     // Geopolitics Generator
                     "geopo_title": "Générateur Géopolitique",
                     "generate_btn": "Générer un Sujet",
@@ -123,7 +129,7 @@ i18n
                     "modern_context": "Contexte Moderne",
                     "close": "Fermer",
                     "click_to_generate": "Cliquez sur générer pour découvrir une anecdote géopolitique !",
-
+ 
                     // Home Hero
                     "hero_title": "SIMONU MARSEILLE",
                     "hero_subtitle": "L'EXCELLENCE DIPLOMATIQUE / KEDGE BUSINESS SCHOOL",
@@ -138,7 +144,13 @@ i18n
                     "feat_2_title": "Excellence",
                     "feat_2_text": "Préparation intensive aux MUN Internationaux. Palmarès reconnu (New York, Washington).",
                     "feat_3_title": "Impact",
-                    "feat_3_text": "Programme Égalité des Chances pour 150 lycéens. Stimuler l'ambition citoyenne."
+                    "feat_3_text": "Programme Égalité des Chances pour 150 lycéens. Stimuler l'ambition citoyenne.",
+                    "pwa_ios_title": "Installer SimONU",
+                    "pwa_ios_subtitle": "Ajoutez SimONU à votre écran d'accueil pour une expérience optimale.",
+                    "pwa_ios_step1": "Appuyez sur le bouton Partager [share_icon] dans la barre d'outils du navigateur.",
+                    "pwa_ios_step2": "Faites défiler et sélectionnez '[plus_icon] Sur l'écran d'accueil'.",
+                    "pwa_ios_hint": "Cette application fonctionne en plein écran sans passer par l'App Store.",
+                    "pwa_ios_close": "Compris"
                 }
             }
         },
