@@ -41,7 +41,7 @@ const Counter = ({ target, label, suffix = '', startValue = 0 }: { target: numbe
 
     return (
         <div ref={nodeRef}>
-            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '4.5rem', fontWeight: 400, color: 'white', lineHeight: 1, marginBottom: '16px' }}>
+            <div className="notranslate" translate="no" style={{ fontFamily: 'var(--font-heading)', fontSize: '4.5rem', fontWeight: 400, color: 'white', lineHeight: 1, marginBottom: '16px' }}>
                 {count}{suffix}
             </div>
             <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '2px', fontFamily: 'var(--font-body)' }}>
@@ -53,7 +53,7 @@ const Counter = ({ target, label, suffix = '', startValue = 0 }: { target: numbe
 
 
 const Home: React.FC = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const heroRef = useRef(null);
 
     return (
@@ -175,7 +175,7 @@ const Home: React.FC = () => {
                             { val: 10,   label: t('stat_awards'),  suffix: '+' },
                             { val: 5000, label: t('stat_students'),suffix: '', startValue: 4900 },
                         ].map((stat, i) => (
-                            <Counter key={i} target={stat.val} label={stat.label} suffix={stat.suffix} startValue={stat.startValue} />
+                            <Counter key={`${i}-${i18n.language}`} target={stat.val} label={stat.label} suffix={stat.suffix} startValue={stat.startValue} />
                         ))}
                     </div>
                 </div>
