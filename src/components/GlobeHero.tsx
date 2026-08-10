@@ -114,10 +114,31 @@ const GlobeHero: React.FC = () => {
                     }}
                     onPolygonClick={(polygon: any) => {
                         if (!polygon || !polygon.properties) return;
-                        const name = polygon.properties.NAME || polygon.properties.NAME_LONG || polygon.properties.ADMIN;
+                        const props = polygon.properties;
+                        const name = props.NAME || props.NAME_LONG || props.ADMIN || '';
+                        const iso2 = (props.ISO_A2 || props.ISO_A2_EH || '').toUpperCase();
+                        const iso3 = (props.ISO_A3 || props.ADM0_A3 || '').toUpperCase();
+                        const nameLower = name.toLowerCase();
+
+                        const lang = i18n.language === 'en' ? 'en' : 'fr';
+
+                        // Intercepter Israël / Palestine / West Bank / Gaza pour rediriger vers le conflit israélo-palestinien
+                        if (
+                            nameLower.includes('israel') ||
+                            nameLower.includes('palestin') ||
+                            nameLower.includes('west bank') ||
+                            nameLower.includes('gaza') ||
+                            iso2 === 'IL' || iso2 === 'PS' ||
+                            iso3 === 'ISR' || iso3 === 'PSE' || iso3 === 'WBG'
+                        ) {
+                            const wikiSlug = lang === 'fr' 
+                                ? 'Conflit_israélo-palestinien' 
+                                : 'Israeli-Palestinian_conflict';
+                            window.open(`https://${lang}.wikipedia.org/wiki/${encodeURIComponent(wikiSlug)}`, '_blank');
+                            return;
+                        }
+
                         if (name) {
-                            const lang = i18n.language === 'en' ? 'en' : 'fr';
-                            
                             // Retrieve translated name for French if available
                             let targetName = name;
                             if (lang === 'fr' && COUNTRY_TRANSLATIONS_FR[name]) {
