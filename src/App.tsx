@@ -25,6 +25,8 @@ const GoogleTranslateSync = () => {
     return null;
 };
 
+import ScrollToTop from './components/ScrollToTop';
+
 // Import des VRAIES pages
 import Home from './pages/Home';
 import Association from './pages/Association';
@@ -54,6 +56,7 @@ const App: React.FC = () => {
 
     return (
         <Router>
+            <ScrollToTop />
             <GoogleTranslateSync />
             <Layout>
                 <Routes>
