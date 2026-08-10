@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Globe from 'react-globe.gl';
 import { useResizeDetector } from 'react-resize-detector';
 import * as THREE from 'three';
@@ -12,9 +12,8 @@ interface City {
 }
 
 // --- CONSTANTS ---
-const MARSEILLE: City = { name: "Marseille", lat: 43.2965, lng: 5.3698 }; // Real coordinates
+const MARSEILLE: City = { name: "Marseille", lat: 43.2965, lng: 5.3698 };
 
-// Real coordinates for capitals
 const CAPITALS: City[] = [
     { name: "Paris", lat: 48.8566, lng: 2.3522 },
     { name: "New York", lat: 40.7128, lng: -74.0060 },
@@ -37,9 +36,12 @@ const GlobeHero: React.FC = () => {
     const [arcs, setArcs] = useState<any[]>([]);
     const [hoveredCountry, setHoveredCountry] = useState<any>(null);
 
+    // Mobile: whether the globe is in interactive mode
+    const isMobile = !!(width && width < 768);
+    const [globeInteractive, setGlobeInteractive] = useState(false);
+
     // 1. Fetch Country Polygons (GeoJSON)
     useEffect(() => {
-        // Use a reliable GeoJSON source directly
         fetch('https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
             .then(res => res.json())
             .then(data => {
@@ -49,15 +51,6 @@ const GlobeHero: React.FC = () => {
 
     // 2. Prepare Arcs (Marseille <-> Capitals)
     useEffect(() => {
-        // We want a "continuous loop" effect.
-        // react-globe.gl arcs animate one way. 
-        // To simulate "M->C then C->M", we can visually trick it.
-        // Or just let it flow M->C repeatedly which looks like "broadcasting".
-        // The user said "renvoie au point de départ". 
-        // We can create TWO arcs per connection: one M->C (gold), one C->M (gold).
-        // And stagger their animation times?
-        // Or just use `arcDashAnimateTime` and loop it.
-
         const newArcs = CAPITALS.flatMap(cap => [
             {
                 startLat: MARSEILLE.lat,
@@ -73,110 +66,163 @@ const GlobeHero: React.FC = () => {
 
     useEffect(() => {
         if (globeEl.current) {
-            // Auto-rotate slowly
             globeEl.current.controls().autoRotate = true;
             globeEl.current.controls().autoRotateSpeed = 0.5;
-
-            // Disable zoom to allow scrolling on the page
             globeEl.current.controls().enableZoom = false;
-
-            // Set initial POV to Europe/Atlantic
             globeEl.current.pointOfView({ lat: 30, lng: -10, altitude: 2.0 });
         }
     }, [globeEl.current]);
 
+    // When mobile interactive mode changes, pause/resume auto-rotate
+    useEffect(() => {
+        if (!globeEl.current) return;
+        if (isMobile && !globeInteractive) {
+            globeEl.current.controls().autoRotate = true;
+        }
+    }, [globeInteractive, isMobile]);
+
+    const handlePolygonClick = useCallback((polygon: any) => {
+        if (!polygon || !polygon.properties) return;
+        const props = polygon.properties;
+        const name = props.NAME || props.NAME_LONG || props.ADMIN || '';
+        const iso2 = (props.ISO_A2 || props.ISO_A2_EH || '').toUpperCase();
+        const iso3 = (props.ISO_A3 || props.ADM0_A3 || '').toUpperCase();
+        const nameLower = name.toLowerCase();
+
+        const lang = i18n.language === 'en' ? 'en' : 'fr';
+
+        // Intercepter Israël / Palestine / West Bank / Gaza → conflit israélo-palestinien
+        if (
+            nameLower.includes('israel') ||
+            nameLower.includes('palestin') ||
+            nameLower.includes('west bank') ||
+            nameLower.includes('gaza') ||
+            iso2 === 'IL' || iso2 === 'PS' ||
+            iso3 === 'ISR' || iso3 === 'PSE' || iso3 === 'WBG'
+        ) {
+            const wikiSlug = lang === 'fr'
+                ? 'Conflit_israélo-palestinien'
+                : 'Israeli-Palestinian_conflict';
+            window.open(`https://${lang}.wikipedia.org/wiki/${encodeURIComponent(wikiSlug)}`, '_blank');
+            return;
+        }
+
+        if (name) {
+            let targetName = name;
+            if (lang === 'fr' && COUNTRY_TRANSLATIONS_FR[name]) {
+                targetName = COUNTRY_TRANSLATIONS_FR[name];
+            }
+            const encoded = encodeURIComponent(targetName.trim().replace(/\s+/g, '_'));
+            window.open(`https://${lang}.wikipedia.org/wiki/${encoded}`, '_blank');
+        }
+    }, [i18n.language]);
+
+    // Effective pointer events: on mobile, only enable when globe mode is active
+    const containerPointerEvents = isMobile ? (globeInteractive ? 'auto' : 'none') : 'auto';
+
     return (
-        <div ref={ref} style={{ width: '100%', height: '100vh', position: 'absolute', top: 0, left: 0, background: '#F8F9FA', pointerEvents: (width && width < 768) ? 'none' : 'auto' }}>
-            {width && height && (
-                <Globe
-                    ref={globeEl}
-                    width={width}
-                    height={height}
-                    backgroundColor="#F8F9FA" // Match page background
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100vh' }}>
+            {/* Globe container */}
+            <div
+                ref={ref}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    background: '#F8F9FA',
+                    pointerEvents: containerPointerEvents,
+                }}
+            >
+                {width && height && (
+                    <Globe
+                        ref={globeEl}
+                        width={width}
+                        height={height}
+                        backgroundColor="#F8F9FA"
 
-                    // Globe Appearance
-                    showGlobe={true}
-                    globeImageUrl={null} // No texture, use material color
-                    globeMaterial={new THREE.MeshPhongMaterial({ color: '#FFFFFF', shininess: 0 })} // Pure Matte White Sphere
-                    showAtmosphere={false} // No halo
+                        // Globe Appearance
+                        showGlobe={true}
+                        globeImageUrl={null}
+                        globeMaterial={new THREE.MeshPhongMaterial({ color: '#FFFFFF', shininess: 0 })}
+                        showAtmosphere={false}
 
-                    // Polygons (Countries)
-                    polygonsData={countries.features}
-                    polygonCapColor={(d: any) => d === hoveredCountry ? 'rgba(212, 175, 55, 0.15)' : '#FFFFFF'} // Soft semi-transparent gold highlight on hover
-                    polygonSideColor={() => 'transparent'}
-                    polygonStrokeColor={() => '#D4AF37'} // Gold Contours
-                    polygonAltitude={(d: any) => d === hoveredCountry ? 0.02 : 0.01} // Slight lift on hover
-                    onPolygonHover={(polygon: any) => {
-                        if (ref.current) {
-                            ref.current.style.cursor = polygon ? 'pointer' : 'default';
-                        }
-                        setHoveredCountry(polygon);
-                    }}
-                    onPolygonClick={(polygon: any) => {
-                        if (!polygon || !polygon.properties) return;
-                        const props = polygon.properties;
-                        const name = props.NAME || props.NAME_LONG || props.ADMIN || '';
-                        const iso2 = (props.ISO_A2 || props.ISO_A2_EH || '').toUpperCase();
-                        const iso3 = (props.ISO_A3 || props.ADM0_A3 || '').toUpperCase();
-                        const nameLower = name.toLowerCase();
-
-                        const lang = i18n.language === 'en' ? 'en' : 'fr';
-
-                        // Intercepter Israël / Palestine / West Bank / Gaza pour rediriger vers le conflit israélo-palestinien
-                        if (
-                            nameLower.includes('israel') ||
-                            nameLower.includes('palestin') ||
-                            nameLower.includes('west bank') ||
-                            nameLower.includes('gaza') ||
-                            iso2 === 'IL' || iso2 === 'PS' ||
-                            iso3 === 'ISR' || iso3 === 'PSE' || iso3 === 'WBG'
-                        ) {
-                            const wikiSlug = lang === 'fr' 
-                                ? 'Conflit_israélo-palestinien' 
-                                : 'Israeli-Palestinian_conflict';
-                            window.open(`https://${lang}.wikipedia.org/wiki/${encodeURIComponent(wikiSlug)}`, '_blank');
-                            return;
-                        }
-
-                        if (name) {
-                            // Retrieve translated name for French if available
-                            let targetName = name;
-                            if (lang === 'fr' && COUNTRY_TRANSLATIONS_FR[name]) {
-                                targetName = COUNTRY_TRANSLATIONS_FR[name];
+                        // Polygons (Countries)
+                        polygonsData={countries.features}
+                        polygonCapColor={(d: any) => d === hoveredCountry ? 'rgba(212, 175, 55, 0.15)' : '#FFFFFF'}
+                        polygonSideColor={() => 'transparent'}
+                        polygonStrokeColor={() => '#D4AF37'}
+                        polygonAltitude={(d: any) => d === hoveredCountry ? 0.02 : 0.01}
+                        onPolygonHover={(polygon: any) => {
+                            if (ref.current) {
+                                (ref.current as HTMLElement).style.cursor = polygon ? 'pointer' : 'default';
                             }
-                            
-                            const encoded = encodeURIComponent(targetName.trim().replace(/\s+/g, '_'));
-                            window.open(`https://${lang}.wikipedia.org/wiki/${encoded}`, '_blank');
-                        }
+                            setHoveredCountry(polygon);
+                        }}
+                        onPolygonClick={handlePolygonClick}
+
+                        // Arcs
+                        arcsData={arcs}
+                        arcColor={() => '#D4AF37'}
+                        arcDashLength={0.9}
+                        arcDashGap={0.1}
+                        arcDashAnimateTime={12000}
+                        arcStroke={0.5}
+
+                        // Labels (Capitals + Marseille)
+                        labelsData={[...CAPITALS, MARSEILLE]}
+                        labelLat={(d: any) => d.lat}
+                        labelLng={(d: any) => d.lng}
+                        labelText={(d: any) => d.name}
+                        labelSize={(d: any) => d.name === "Marseille" ? 1.0 : 0.5}
+                        labelDotRadius={(d: any) => d.name === "Marseille" ? 0.5 : 0.3}
+                        labelColor={(d: any) => d.name === "Marseille" ? '#D4AF37' : '#14213d'}
+                        labelResolution={2}
+
+                        // Rings (Pulse at Marseille)
+                        ringsData={[MARSEILLE]}
+                        ringColor={() => '#D4AF37'}
+                        ringMaxRadius={3}
+                        ringPropagationSpeed={2}
+                        ringRepeatPeriod={1000}
+                    />
+                )}
+            </div>
+
+            {/* Mobile toggle button — visible only on small screens */}
+            {isMobile && (
+                <button
+                    onClick={() => setGlobeInteractive(prev => !prev)}
+                    style={{
+                        position: 'absolute',
+                        bottom: '24px',
+                        right: '20px',
+                        zIndex: 999,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 18px',
+                        borderRadius: '100px',
+                        border: `2px solid ${globeInteractive ? '#D4AF37' : '#14213d'}`,
+                        background: globeInteractive ? '#14213d' : 'rgba(255,255,255,0.92)',
+                        color: globeInteractive ? '#D4AF37' : '#14213d',
+                        fontFamily: 'Montserrat, sans-serif',
+                        fontWeight: 700,
+                        fontSize: '13px',
+                        letterSpacing: '0.5px',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 20px rgba(20,33,61,0.18)',
+                        backdropFilter: 'blur(8px)',
+                        transition: 'all 0.25s ease',
+                        WebkitTapHighlightColor: 'transparent',
+                        pointerEvents: 'auto',
                     }}
-
-                    // Arcs
-                    arcsData={arcs}
-                    arcColor={() => '#D4AF37'} // Gold
-                    arcDashLength={0.9} // Continuous looking lines (long segments)
-                    arcDashGap={0.1} // Short gaps
-                    arcDashAnimateTime={12000} // Extremely slow speed
-                    arcStroke={0.5} // Thin Minimalist Lines
-
-                    // Labels (Capitals + Marseille)
-                    labelsData={[...CAPITALS, MARSEILLE]}
-                    labelLat={(d: any) => d.lat}
-                    labelLng={(d: any) => d.lng}
-                    labelText={(d: any) => d.name}
-                    labelSize={(d: any) => d.name === "Marseille" ? 1.0 : 0.5} // Smaller minimalist labels
-                    labelDotRadius={(d: any) => d.name === "Marseille" ? 0.5 : 0.3} // Smaller dots
-                    labelColor={(d: any) => d.name === "Marseille" ? '#D4AF37' : '#14213d'}
-                    labelResolution={2}
-
-                    // Rings (Pulse at Marseille)
-                    ringsData={[MARSEILLE]}
-                    ringColor={() => '#D4AF37'}
-                    ringMaxRadius={3} // Smaller pulse
-                    ringPropagationSpeed={2}
-                    ringRepeatPeriod={1000}
-                />
+                    aria-label={globeInteractive ? 'Retour au scroll' : 'Explorer le globe'}
+                >
+                    <span style={{ fontSize: '18px', lineHeight: 1 }}>
+                        {globeInteractive ? '📜' : '🌍'}
+                    </span>
+                    {globeInteractive ? 'Scroll' : 'Explorer'}
+                </button>
             )}
-            {/* Title Overlay Removed */}
         </div>
     );
 };
