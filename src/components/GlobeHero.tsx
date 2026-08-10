@@ -200,7 +200,7 @@ const GlobeHero: React.FC = () => {
                     style={{
                         position: 'absolute',
                         bottom: '24px',
-                        right: '20px',
+                        left: '20px',
                         zIndex: 999,
                         display: 'flex',
                         alignItems: 'center',
