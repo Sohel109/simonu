@@ -68,8 +68,14 @@ const GlobeHero: React.FC = () => {
         if (globeEl.current) {
             globeEl.current.controls().autoRotate = true;
             globeEl.current.controls().autoRotateSpeed = 0.5;
-            globeEl.current.controls().enableZoom = false;
-            globeEl.current.pointOfView({ lat: 30, lng: -10, altitude: 2.0 });
+
+            // Enable zoom with reasonable limits
+            globeEl.current.controls().enableZoom = true;
+            globeEl.current.controls().minDistance = 200;  // max zoom-in
+            globeEl.current.controls().maxDistance = 600;  // max zoom-out
+
+            // Initial view: slightly more zoomed out
+            globeEl.current.pointOfView({ lat: 30, lng: -10, altitude: 2.8 });
         }
     }, [globeEl.current]);
 
@@ -121,7 +127,7 @@ const GlobeHero: React.FC = () => {
     const containerPointerEvents = isMobile ? (globeInteractive ? 'auto' : 'none') : 'auto';
 
     return (
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100vh' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100dvh' } as React.CSSProperties}>
             {/* Globe container */}
             <div
                 ref={ref}

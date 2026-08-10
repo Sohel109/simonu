@@ -64,13 +64,15 @@ const Home: React.FC = () => {
                 ref={heroRef}
                 style={{
                     position: 'relative',
-                    height: '100vh',
+                    // 100dvh = dynamic viewport height (excludes browser chrome on mobile)
+                    // Falls back to 100vh on older browsers
+                    height: '100dvh',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                }}
+                } as React.CSSProperties}
             >
                 <GlobeHero />
 
