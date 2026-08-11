@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 
 interface Partner {
     name: string;
@@ -23,10 +23,10 @@ const PARTNERS: Partner[] = [
 ];
 
 /**
- * Logo avec fallback Clearbit puis texte si l'image ne charge pas.
+ * Logo avec fallback Clearbit / icon.horse puis texte si l'image ne charge pas.
  * Hauteur fixe + object-contain = taille homogène garantie.
  */
-const PartnerLogo: React.FC<{ partner: Partner }> = ({ partner }) => {
+const PartnerLogo: React.FC<{ partner: Partner; onLinkClick?: (e: React.MouseEvent) => void }> = ({ partner, onLinkClick }) => {
     const [failed, setFailed] = useState(false);
     const [hovered, setHovered] = useState(false);
 
@@ -35,6 +35,7 @@ const PartnerLogo: React.FC<{ partner: Partner }> = ({ partner }) => {
             href={partner.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={onLinkClick}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             className="flex items-center justify-center shrink-0 px-10"
@@ -87,36 +88,79 @@ const PartnerLogo: React.FC<{ partner: Partner }> = ({ partner }) => {
 };
 
 const PartnerMarquee: React.FC = () => {
-    const [paused, setPaused] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [isMouseDragging, setIsMouseDragging] = useState(false);
+    const [isTouching, setIsTouching] = useState(false);
+    const [isTouchPaused, setIsTouchPaused] = useState(false);
+
     const [startX, setStartX] = useState(0);
     const [startScrollLeft, setStartScrollLeft] = useState(0);
+    const hasDraggedRef = useRef(false);
+    const touchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const trackRef = useRef<HTMLDivElement>(null);
 
-    // Auto-scroll loop
+    const isPaused = isHovered || isMouseDragging || isTouching || isTouchPaused;
+
+    // Normalisation des limites pour un défilement infini sans coupure
+    const normalizeScroll = useCallback(() => {
+        if (!trackRef.current) return;
+        const singleSetWidth = trackRef.current.scrollWidth / 4;
+        if (singleSetWidth <= 0) return;
+
+        if (trackRef.current.scrollLeft >= singleSetWidth * 2) {
+            trackRef.current.scrollLeft -= singleSetWidth;
+        } else if (trackRef.current.scrollLeft <= 10) {
+            trackRef.current.scrollLeft += singleSetWidth;
+        }
+    }, []);
+
+    // Définir la position initiale au début du deuxième set (Set B)
+    useEffect(() => {
+        if (trackRef.current) {
+            const singleSetWidth = trackRef.current.scrollWidth / 4;
+            if (singleSetWidth > 0 && trackRef.current.scrollLeft === 0) {
+                trackRef.current.scrollLeft = singleSetWidth;
+            }
+        }
+    }, []);
+
+    // Boucle d'auto-scroll
     useEffect(() => {
         let animationFrameId: number;
         
         const scroll = () => {
-            if (trackRef.current && !paused && !isDragging) {
-                trackRef.current.scrollLeft += 1;
-                
-                // The content is duplicated 4 times, resetting at 1/4th (one full set) width is seamless
-                const singleSetWidth = trackRef.current.scrollWidth / 4;
-                if (trackRef.current.scrollLeft >= singleSetWidth) {
-                    trackRef.current.scrollLeft -= singleSetWidth;
-                }
+            if (trackRef.current && !isPaused) {
+                trackRef.current.scrollLeft += 0.8;
+                normalizeScroll();
             }
             animationFrameId = requestAnimationFrame(scroll);
         };
         
         animationFrameId = requestAnimationFrame(scroll);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [paused, isDragging]);
+    }, [isPaused, normalizeScroll]);
 
-    // Mouse Dragging (Desktop)
+    // Gestionnaires d'événements Tactiles (Mobile)
+    const handleTouchStart = () => {
+        setIsTouching(true);
+        if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    };
+
+    const handleTouchEnd = () => {
+        setIsTouching(false);
+        if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+        setIsTouchPaused(true);
+        // Reprend l'auto-scroll après la fin de l'inertie de glissement mobile
+        touchTimerRef.current = setTimeout(() => {
+            setIsTouchPaused(false);
+        }, 1200);
+    };
+
+    // Gestionnaires de Drag à la souris (Desktop)
     const handleMouseDown = (e: React.MouseEvent) => {
-        setIsDragging(true);
+        if (e.button !== 0) return;
+        setIsMouseDragging(true);
+        hasDraggedRef.current = false;
         if (trackRef.current) {
             setStartX(e.pageX - trackRef.current.offsetLeft);
             setStartScrollLeft(trackRef.current.scrollLeft);
@@ -124,45 +168,42 @@ const PartnerMarquee: React.FC = () => {
     };
 
     const handleMouseLeave = () => {
-        setIsDragging(false);
-        setPaused(false);
+        setIsHovered(false);
+        setIsMouseDragging(false);
+    };
+
+    const handleMouseEnter = () => {
+        setIsHovered(true);
     };
 
     const handleMouseUp = () => {
-        setIsDragging(false);
+        setIsMouseDragging(false);
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging || !trackRef.current) return;
-        e.preventDefault(); // prevent text selection
+        if (!isMouseDragging || !trackRef.current) return;
+        e.preventDefault();
         const x = e.pageX - trackRef.current.offsetLeft;
-        const walk = (x - startX) * 1.5; // Drag speed multiplier
+        const walk = (x - startX) * 1.5;
         
-        let newScrollLeft = startScrollLeft - walk;
-        const singleSetWidth = trackRef.current.scrollWidth / 4;
-
-        if (newScrollLeft >= singleSetWidth * 2) {
-            newScrollLeft -= singleSetWidth;
-            setStartX(e.pageX - trackRef.current.offsetLeft);
-            setStartScrollLeft(newScrollLeft);
-        } else if (newScrollLeft <= 0) {
-            newScrollLeft += singleSetWidth;
-            setStartX(e.pageX - trackRef.current.offsetLeft);
-            setStartScrollLeft(newScrollLeft);
+        if (Math.abs(walk) > 5) {
+            hasDraggedRef.current = true;
         }
-        
+
+        const newScrollLeft = startScrollLeft - walk;
         trackRef.current.scrollLeft = newScrollLeft;
+        normalizeScroll();
     };
 
-    // Native touch scrolling loop handler (Mobile)
     const handleScroll = () => {
-        if (!trackRef.current || isDragging) return;
-        const singleSetWidth = trackRef.current.scrollWidth / 4;
-        
-        if (trackRef.current.scrollLeft >= singleSetWidth * 2) {
-            trackRef.current.scrollLeft -= singleSetWidth;
-        } else if (trackRef.current.scrollLeft <= 0) {
-            trackRef.current.scrollLeft += singleSetWidth;
+        normalizeScroll();
+    };
+
+    const handleLinkClick = (e: React.MouseEvent) => {
+        if (hasDraggedRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            hasDraggedRef.current = false;
         }
     };
 
@@ -179,11 +220,14 @@ const PartnerMarquee: React.FC = () => {
 
             <div
                 ref={trackRef}
-                onMouseEnter={() => setPaused(true)}
+                onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
                 onMouseMove={handleMouseMove}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onTouchCancel={handleTouchEnd}
                 onScroll={handleScroll}
                 className="flex"
                 style={{
@@ -191,15 +235,17 @@ const PartnerMarquee: React.FC = () => {
                     overflowX: 'auto',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
-                    cursor: isDragging ? 'grabbing' : 'grab',
+                    WebkitOverflowScrolling: 'touch',
+                    touchAction: 'pan-x',
+                    cursor: isMouseDragging ? 'grabbing' : 'grab',
                 }}
             >
-                <div className="flex w-max" style={{ pointerEvents: isDragging ? 'none' : 'auto' }}>
-                    {/* 4 sets to ensure smooth seamless looping in both directions during drag */}
-                    {PARTNERS.map((p, i) => <PartnerLogo key={`a-${i}`} partner={p} />)}
-                    {PARTNERS.map((p, i) => <PartnerLogo key={`b-${i}`} partner={p} />)}
-                    {PARTNERS.map((p, i) => <PartnerLogo key={`c-${i}`} partner={p} />)}
-                    {PARTNERS.map((p, i) => <PartnerLogo key={`d-${i}`} partner={p} />)}
+                <div className="flex w-max" style={{ pointerEvents: isMouseDragging ? 'none' : 'auto' }}>
+                    {/* 4 jeux de logos pour assurer un défilement infini fluide dans les deux directions */}
+                    {PARTNERS.map((p, i) => <PartnerLogo key={`a-${i}`} partner={p} onLinkClick={handleLinkClick} />)}
+                    {PARTNERS.map((p, i) => <PartnerLogo key={`b-${i}`} partner={p} onLinkClick={handleLinkClick} />)}
+                    {PARTNERS.map((p, i) => <PartnerLogo key={`c-${i}`} partner={p} onLinkClick={handleLinkClick} />)}
+                    {PARTNERS.map((p, i) => <PartnerLogo key={`d-${i}`} partner={p} onLinkClick={handleLinkClick} />)}
                 </div>
             </div>
             
@@ -213,3 +259,4 @@ const PartnerMarquee: React.FC = () => {
 };
 
 export default PartnerMarquee;
+
